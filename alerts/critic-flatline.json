@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "v2alpha1",
+  "version": "v5",
+  "alert": "DevSwarm: critic catch rate flatlined",
+  "ruleType": "threshold_rule",
+  "alertType": "TRACES_BASED_ALERT",
+  "notificationSettings": { "usePolicy": false, "groupBy": [] },
+  "evaluation": { "kind": "rolling", "spec": { "evalWindow": "1h0m0s", "frequency": "5m0s" } },
+  "condition": {
+    "thresholds": {
+      "kind": "basic",
+      "spec": [{ "name": "critical", "target": 1, "matchType": "2", "op": "2", "channels": ["swarm-doctor"] }]
+    },
+    "compositeQuery": {
+      "queries": [
+        {
+          "type": "clickhouse_sql",
+          "spec": {
+            "name": "A",
+            "disabled": false,
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 30 MINUTE) AS ts, sum(attributes_number['devswarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts HAVING count() > 0 ORDER BY ts"
+          }
+        }
+      ]
+    }
+  },
+  "labels": { "severity": "critical" },
+  "annotations": { "summary": "Generations are completing but the critic caught nothing for an hour. Historically the catch rate is well above zero, so a flatline means the critic is silently broken, not that generated code became perfect." }
+}

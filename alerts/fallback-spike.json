@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "v2alpha1",
+  "version": "v5",
+  "alert": "DevSwarm: fallback promotions spiking",
+  "ruleType": "threshold_rule",
+  "alertType": "TRACES_BASED_ALERT",
+  "notificationSettings": { "usePolicy": false, "groupBy": [] },
+  "evaluation": { "kind": "rolling", "spec": { "evalWindow": "15m0s", "frequency": "1m0s" } },
+  "condition": {
+    "thresholds": {
+      "kind": "basic",
+      "spec": [{ "name": "warning", "target": 3, "matchType": "1", "op": "1", "channels": ["swarm-doctor"] }]
+    },
+    "compositeQuery": {
+      "queries": [
+        {
+          "type": "clickhouse_sql",
+          "spec": {
+            "name": "A",
+            "disabled": false,
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 5 MINUTE) AS ts, count() AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND arrayExists(e -> e LIKE '%fallback_promotion%', events) AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts ORDER BY ts"
+          }
+        }
+      ]
+    }
+  },
+  "labels": { "severity": "warning" },
+  "annotations": { "summary": "More than 3 fallback promotions in 15 minutes: a primary model or provider is degraded. Swarm Doctor has been notified via the swarm-doctor webhook channel." }
+}

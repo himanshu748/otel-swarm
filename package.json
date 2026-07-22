@@ -1,0 +1,20 @@
+{
+  "name": "otel-swarm",
+  "version": "0.1.0",
+  "description": "OpenTelemetry instrumentation for multi-agent LLM systems: GenAI semconv spans per agent and per model call, fallback promotions as span events, plus a mirrored event bus for live UIs. Ships with importable SigNoz dashboards and alert rules.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": { ".": "./src/index.js" },
+  "keywords": ["opentelemetry", "llm", "agents", "observability", "signoz", "genai"],
+  "license": "MIT",
+  "repository": "github:himanshu748/otel-swarm",
+  "scripts": {
+    "example": "node example/demo.js"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.57.0",
+    "@opentelemetry/resources": "^1.30.0",
+    "@opentelemetry/sdk-trace-node": "^1.30.0"
+  }
+}

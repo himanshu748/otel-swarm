@@ -1,0 +1,85 @@
+{
+  "title": "DevSwarm / Generation Overview",
+  "description": "One prompt in, one app out: generations, outcomes, time-to-app and the span load per agent role. All data from the swarm's own traces.",
+  "tags": ["devswarm", "swarm"],
+  "layout": [
+    { "i": "gens", "x": 0, "y": 0, "w": 3, "h": 3 },
+    { "i": "pass", "x": 3, "y": 0, "w": 3, "h": 3 },
+    { "i": "tta", "x": 6, "y": 0, "w": 6, "h": 3 },
+    { "i": "roleload", "x": 0, "y": 3, "w": 12, "h": 4 }
+  ],
+  "widgets": [
+    {
+      "id": "gens",
+      "title": "Generations",
+      "panelTypes": "value",
+      "query": {
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "generations",
+            "disabled": false,
+            "query": "SELECT count() AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
+          }
+        ],
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "promql": []
+      }
+    },
+    {
+      "id": "pass",
+      "title": "Review-gate pass rate (%)",
+      "panelTypes": "value",
+      "query": {
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "pass %",
+            "disabled": false,
+            "query": "SELECT round(100 * countIf(attributes_string['devswarm.generation.verdict']='pass') / greatest(count(),1), 1) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
+          }
+        ],
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "promql": []
+      }
+    },
+    {
+      "id": "tta",
+      "title": "Time to app (seconds, per generation)",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "seconds",
+            "disabled": false,
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 5 MINUTE) AS ts, round(avg(durationNano)/1e9, 1) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts ORDER BY ts"
+          }
+        ],
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "promql": []
+      }
+    },
+    {
+      "id": "roleload",
+      "title": "LLM calls and latency by role",
+      "panelTypes": "table",
+      "query": {
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "",
+            "disabled": false,
+            "query": "SELECT attributes_string['devswarm.role'] AS role, count() AS calls, round(avg(durationNano)/1e9,1) AS avg_s, round(quantile(0.95)(durationNano)/1e9,1) AS p95_s, countIf(statusCode=2) AS errors FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY role ORDER BY calls DESC"
+          }
+        ],
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "promql": []
+      }
+    }
+  ]
+}
