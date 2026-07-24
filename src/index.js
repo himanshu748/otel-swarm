@@ -47,9 +47,10 @@ export function createSwarm({ service, version = '0.0.0', otlpEndpoint = process
   }
 
   /** Child span for one agent's unit of work. */
-  async function agent(role, fn) {
+  async function agent(role, fn, attributes) {
     return tracer.startActiveSpan(`agent.${role}`, async (span) => {
       span.setAttribute('swarm.role', role);
+      if (attributes) span.setAttributes(attributes);
       emit('agent_start', { role });
       try {
         const result = await fn(span);
@@ -71,10 +72,11 @@ export function createSwarm({ service, version = '0.0.0', otlpEndpoint = process
    * failure, recorded as a span event so "why did the model switch" is
    * answerable from the trace.
    * call(model) must resolve to { content, inputTokens, outputTokens }.
+   * Extra span attributes (host-specific role keys, run ids) go in attributes.
    */
-  async function llm(role, { model, fallbackModel, call }) {
+  async function llm(role, { model, fallbackModel, call, attributes }) {
     return tracer.startActiveSpan(`llm.${role}`, async (span) => {
-      span.setAttributes({ 'gen_ai.operation.name': 'chat', 'gen_ai.request.model': model, 'swarm.role': role });
+      span.setAttributes({ 'gen_ai.operation.name': 'chat', 'gen_ai.request.model': model, 'swarm.role': role, ...(attributes || {}) });
       const traceId = span.spanContext().traceId;
       const started = Date.now();
       emit('llm_start', { role, model, traceId });
