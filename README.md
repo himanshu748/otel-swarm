@@ -4,9 +4,16 @@ OpenTelemetry instrumentation for multi-agent LLM systems. One `createSwarm()` c
 
 Built during the Agents of SigNoz hackathon to instrument [DevSwarm](https://github.com/himanshu748/devswarm), extracted because any multi-agent system has the same observability problem: parallel agents, model fallbacks and review loops are opaque without traces, and nobody wants to hand-wire OTel for every role.
 
-## Run it
+## Install
 
 ```sh
+npm install github:himanshu748/otel-swarm
+```
+
+## Run the example
+
+```sh
+git clone https://github.com/himanshu748/otel-swarm && cd otel-swarm
 npm install
 npm run example                                              # spans to console
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 npm run example   # spans to SigNoz
@@ -56,4 +63,4 @@ Dashboard queries assume `service.name` filters you adjust to your service, and 
 
 ## License
 
-MIT
+MIT, see [LICENSE](LICENSE).
