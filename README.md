@@ -58,6 +58,7 @@ swarm.events.on('event', (e) => { /* stream llm_start/llm_end/fallback/critic_ca
 
 - `dashboards/`: three importable dashboards (POST each to `/api/v1/dashboards`): Generation Overview, LLM Economics (tokens and latency per role and model, fallback pressure), Review-Gate Funnel.
 - `alerts/`: two alert rules in v2alpha1 schema (POST to `/api/v2/rules`): fallback-promotion spike, and review catch-rate flatline (if your reviewer suddenly catches nothing, the reviewer broke, not the code).
+- `casting.yaml` and `casting.yaml.lock`: the Foundry config the SigNoz behind this library was installed from, so the backend the dashboards target is reproducible rather than assumed.
 
 Dashboard queries assume `service.name` filters you adjust to your service, and span names `llm.*`, `agent.*` and a root `generation` span, which is exactly what this library emits.
 
