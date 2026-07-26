@@ -1,12 +1,38 @@
 {
-  "title": "DevSwarm / LLM Economics",
-  "description": "The open-model cost thesis, live: tokens per role, per model, and fallback-promotion pressure. If the swarm gets expensive or a provider degrades, this page says so first.",
-  "tags": ["devswarm", "cost"],
+  "title": "otel-swarm / LLM Economics",
+  "description": "The open-model cost thesis, live: tokens per role, per model, and fallback-promotion pressure. If the swarm gets expensive or a provider degrades, this page says so first. Set the `service` variable to your own service name; it defaults to the bundled example.",
+  "tags": [
+    "otel-swarm"
+  ],
   "layout": [
-    { "i": "tokens", "x": 0, "y": 0, "w": 3, "h": 3 },
-    { "i": "toktime", "x": 3, "y": 0, "w": 9, "h": 3 },
-    { "i": "bymodel", "x": 0, "y": 3, "w": 6, "h": 4 },
-    { "i": "fallbacks", "x": 6, "y": 3, "w": 6, "h": 4 }
+    {
+      "i": "tokens",
+      "x": 0,
+      "y": 0,
+      "w": 3,
+      "h": 3
+    },
+    {
+      "i": "toktime",
+      "x": 3,
+      "y": 0,
+      "w": 9,
+      "h": 3
+    },
+    {
+      "i": "bymodel",
+      "x": 0,
+      "y": 3,
+      "w": 6,
+      "h": 4
+    },
+    {
+      "i": "fallbacks",
+      "x": 6,
+      "y": 3,
+      "w": 6,
+      "h": 4
+    }
   ],
   "widgets": [
     {
@@ -20,10 +46,13 @@
             "name": "A",
             "legend": "tokens",
             "disabled": false,
-            "query": "SELECT sum(attributes_number['gen_ai.usage.input_tokens'] + attributes_number['gen_ai.usage.output_tokens']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
+            "query": "SELECT sum(attributes_number['gen_ai.usage.input_tokens'] + attributes_number['gen_ai.usage.output_tokens']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
           }
         ],
-        "builder": { "queryData": [], "queryFormulas": [] },
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
         "promql": []
       }
     },
@@ -38,10 +67,13 @@
             "name": "A",
             "legend": "{{role}}",
             "disabled": false,
-            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 5 MINUTE) AS ts, attributes_string['devswarm.role'] AS role, sum(attributes_number['gen_ai.usage.input_tokens'] + attributes_number['gen_ai.usage.output_tokens']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts, role ORDER BY ts"
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 5 MINUTE) AS ts, attributes_string['devswarm.role'] AS role, sum(attributes_number['gen_ai.usage.input_tokens'] + attributes_number['gen_ai.usage.output_tokens']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts, role ORDER BY ts"
           }
         ],
-        "builder": { "queryData": [], "queryFormulas": [] },
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
         "promql": []
       }
     },
@@ -56,10 +88,13 @@
             "name": "A",
             "legend": "",
             "disabled": false,
-            "query": "SELECT attributes_string['gen_ai.request.model'] AS model, count() AS calls, sum(attributes_number['gen_ai.usage.input_tokens'] + attributes_number['gen_ai.usage.output_tokens']) AS tokens, round(avg(durationNano)/1e9,1) AS avg_s FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY model ORDER BY tokens DESC"
+            "query": "SELECT attributes_string['gen_ai.request.model'] AS model, count() AS calls, sum(attributes_number['gen_ai.usage.input_tokens'] + attributes_number['gen_ai.usage.output_tokens']) AS tokens, round(avg(durationNano)/1e9,1) AS avg_s FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY model ORDER BY tokens DESC"
           }
         ],
-        "builder": { "queryData": [], "queryFormulas": [] },
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
         "promql": []
       }
     },
@@ -74,12 +109,31 @@
             "name": "A",
             "legend": "{{role}}",
             "disabled": false,
-            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 15 MINUTE) AS ts, attributes_string['devswarm.role'] AS role, count() AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND arrayExists(e -> e LIKE '%fallback_promotion%', events) AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts, role ORDER BY ts"
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 15 MINUTE) AS ts, attributes_string['devswarm.role'] AS role, count() AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND arrayExists(e -> e LIKE '%fallback_promotion%', events) AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts, role ORDER BY ts"
           }
         ],
-        "builder": { "queryData": [], "queryFormulas": [] },
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
         "promql": []
       }
     }
-  ]
+  ],
+  "variables": {
+    "3a92dd37-7c9d-5945-aae7-bd7593e00e1b": {
+      "id": "3a92dd37-7c9d-5945-aae7-bd7593e00e1b",
+      "name": "service",
+      "key": "service",
+      "description": "The service.name your swarm reports under",
+      "type": "TEXTBOX",
+      "textboxValue": "otel-swarm-demo",
+      "selectedValue": "otel-swarm-demo",
+      "multiSelect": false,
+      "showALLOption": false,
+      "sort": "DISABLED",
+      "order": 0,
+      "modificationUUID": "3a92dd37-7c9d-5945-aae7-bd7593e00e1b"
+    }
+  }
 }

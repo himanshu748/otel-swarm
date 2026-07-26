@@ -1,12 +1,38 @@
 {
-  "title": "DevSwarm / Review-Gate Funnel",
-  "description": "The core value prop, instrumented: what the critic catches, how often regeneration fixes it, and whether the gate is alive at all. A flatlining catch rate means the critic is broken, not that the code got perfect.",
-  "tags": ["devswarm", "review-gate"],
+  "title": "otel-swarm / Review-Gate Funnel",
+  "description": "The core value prop, instrumented: what the critic catches, how often regeneration fixes it, and whether the gate is alive at all. A flatlining catch rate means the critic is broken, not that the code got perfect. Set the `service` variable to your own service name; it defaults to the bundled example.",
+  "tags": [
+    "otel-swarm"
+  ],
   "layout": [
-    { "i": "catches", "x": 0, "y": 0, "w": 3, "h": 3 },
-    { "i": "regens", "x": 3, "y": 0, "w": 3, "h": 3 },
-    { "i": "catchtime", "x": 6, "y": 0, "w": 6, "h": 3 },
-    { "i": "verdicts", "x": 0, "y": 3, "w": 12, "h": 4 }
+    {
+      "i": "catches",
+      "x": 0,
+      "y": 0,
+      "w": 3,
+      "h": 3
+    },
+    {
+      "i": "regens",
+      "x": 3,
+      "y": 0,
+      "w": 3,
+      "h": 3
+    },
+    {
+      "i": "catchtime",
+      "x": 6,
+      "y": 0,
+      "w": 6,
+      "h": 3
+    },
+    {
+      "i": "verdicts",
+      "x": 0,
+      "y": 3,
+      "w": 12,
+      "h": 4
+    }
   ],
   "widgets": [
     {
@@ -20,10 +46,13 @@
             "name": "A",
             "legend": "catches",
             "disabled": false,
-            "query": "SELECT sum(attributes_number['devswarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
+            "query": "SELECT sum(attributes_number['devswarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
           }
         ],
-        "builder": { "queryData": [], "queryFormulas": [] },
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
         "promql": []
       }
     },
@@ -38,10 +67,13 @@
             "name": "A",
             "legend": "regens",
             "disabled": false,
-            "query": "SELECT sum(attributes_number['devswarm.generation.regenerations']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
+            "query": "SELECT sum(attributes_number['devswarm.generation.regenerations']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
           }
         ],
-        "builder": { "queryData": [], "queryFormulas": [] },
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
         "promql": []
       }
     },
@@ -56,10 +88,13 @@
             "name": "A",
             "legend": "catches",
             "disabled": false,
-            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 15 MINUTE) AS ts, sum(attributes_number['devswarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts ORDER BY ts"
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 15 MINUTE) AS ts, sum(attributes_number['devswarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts ORDER BY ts"
           }
         ],
-        "builder": { "queryData": [], "queryFormulas": [] },
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
         "promql": []
       }
     },
@@ -74,12 +109,31 @@
             "name": "A",
             "legend": "",
             "disabled": false,
-            "query": "SELECT attributes_string['devswarm.generation.id'] AS generation, attributes_string['devswarm.generation.verdict'] AS verdict, attributes_number['devswarm.generation.critic_catches'] AS catches, attributes_number['devswarm.generation.regenerations'] AS regens, round(durationNano/1e9,1) AS seconds FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} ORDER BY timestamp DESC LIMIT 20"
+            "query": "SELECT attributes_string['devswarm.generation.id'] AS generation, attributes_string['devswarm.generation.verdict'] AS verdict, attributes_number['devswarm.generation.critic_catches'] AS catches, attributes_number['devswarm.generation.regenerations'] AS regens, round(durationNano/1e9,1) AS seconds FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} ORDER BY timestamp DESC LIMIT 20"
           }
         ],
-        "builder": { "queryData": [], "queryFormulas": [] },
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
         "promql": []
       }
     }
-  ]
+  ],
+  "variables": {
+    "5f3d71e4-1d90-5abf-8c56-312d520e38d8": {
+      "id": "5f3d71e4-1d90-5abf-8c56-312d520e38d8",
+      "name": "service",
+      "key": "service",
+      "description": "The service.name your swarm reports under",
+      "type": "TEXTBOX",
+      "textboxValue": "otel-swarm-demo",
+      "selectedValue": "otel-swarm-demo",
+      "multiSelect": false,
+      "showALLOption": false,
+      "sort": "DISABLED",
+      "order": 0,
+      "modificationUUID": "5f3d71e4-1d90-5abf-8c56-312d520e38d8"
+    }
+  }
 }
