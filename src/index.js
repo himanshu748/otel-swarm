@@ -98,8 +98,12 @@ export function createSwarm({ service, version = '0.0.0', otlpEndpoint = process
           span.end();
           throw err;
         }
+        // gen_ai.request.model stays the model we ATTEMPTED. Overwriting it with
+        // the fallback attributes the primary's failure, and its wasted latency,
+        // to the model that cleaned up after it, in every dashboard that groups
+        // by this attribute. The switch belongs in the event, which carries both
+        // ends of it.
         span.addEvent('fallback_promotion', { from: model, to: fallbackModel, reason: String(err.message || err) });
-        span.setAttribute('gen_ai.request.model', fallbackModel);
         emit('fallback', { role, from: model, to: fallbackModel, reason: String(err.message || err), traceId });
         try {
           return finish(fallbackModel, await call(fallbackModel));

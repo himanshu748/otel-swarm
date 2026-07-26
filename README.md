@@ -60,7 +60,19 @@ swarm.events.on('event', (e) => { /* stream llm_start/llm_end/fallback/critic_ca
 - `alerts/`: two alert rules in v2alpha1 schema (POST to `/api/v2/rules`): fallback-promotion spike, and review catch-rate flatline (if your reviewer suddenly catches nothing, the reviewer broke, not the code).
 - `casting.yaml` and `casting.yaml.lock`: the Foundry config the SigNoz behind this library was installed from, so the backend the dashboards target is reproducible rather than assumed.
 
-Dashboard queries assume `service.name` filters you adjust to your service, and span names `llm.*`, `agent.*` and a root `generation` span, which is exactly what this library emits.
+Every dashboard carries a `service` variable, so you set your service name once in the SigNoz UI instead of editing four queries. It defaults to `otel-swarm-demo`, which is what `npm run example` reports as, so the pack has data the moment you import it.
+
+The queries read what this library already emits: span names `llm.*` and `agent.*`, a root `generation` span, and `swarm.role` on every span. Three attributes on your root span are yours to set, and the Generation Overview and Review-Gate Funnel dashboards read them:
+
+```js
+root.setAttributes({
+  'swarm.generation.verdict': 'pass',        // or 'fail'
+  'swarm.generation.critic_catches': 1,
+  'swarm.generation.regenerations': 0
+});
+```
+
+`example/demo.js` sets them, so you can see the shape.
 
 ## License
 

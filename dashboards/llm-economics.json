@@ -67,7 +67,7 @@
             "name": "A",
             "legend": "{{role}}",
             "disabled": false,
-            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 5 MINUTE) AS ts, attributes_string['devswarm.role'] AS role, sum(attributes_number['gen_ai.usage.input_tokens'] + attributes_number['gen_ai.usage.output_tokens']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts, role ORDER BY ts"
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 5 MINUTE) AS ts, attributes_string['swarm.role'] AS role, sum(attributes_number['gen_ai.usage.input_tokens'] + attributes_number['gen_ai.usage.output_tokens']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts, role ORDER BY ts"
           }
         ],
         "builder": {
@@ -109,7 +109,7 @@
             "name": "A",
             "legend": "{{role}}",
             "disabled": false,
-            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 15 MINUTE) AS ts, attributes_string['devswarm.role'] AS role, count() AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND arrayExists(e -> e LIKE '%fallback_promotion%', events) AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts, role ORDER BY ts"
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 15 MINUTE) AS ts, attributes_string['swarm.role'] AS role, count() AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND arrayExists(e -> e LIKE '%fallback_promotion%', events) AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts, role ORDER BY ts"
           }
         ],
         "builder": {

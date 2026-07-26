@@ -46,7 +46,7 @@
             "name": "A",
             "legend": "catches",
             "disabled": false,
-            "query": "SELECT sum(attributes_number['devswarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
+            "query": "SELECT sum(attributes_number['swarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
           }
         ],
         "builder": {
@@ -67,7 +67,7 @@
             "name": "A",
             "legend": "regens",
             "disabled": false,
-            "query": "SELECT sum(attributes_number['devswarm.generation.regenerations']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
+            "query": "SELECT sum(attributes_number['swarm.generation.regenerations']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
           }
         ],
         "builder": {
@@ -88,7 +88,7 @@
             "name": "A",
             "legend": "catches",
             "disabled": false,
-            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 15 MINUTE) AS ts, sum(attributes_number['devswarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts ORDER BY ts"
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 15 MINUTE) AS ts, sum(attributes_number['swarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts ORDER BY ts"
           }
         ],
         "builder": {
@@ -109,7 +109,7 @@
             "name": "A",
             "legend": "",
             "disabled": false,
-            "query": "SELECT attributes_string['devswarm.generation.id'] AS generation, attributes_string['devswarm.generation.verdict'] AS verdict, attributes_number['devswarm.generation.critic_catches'] AS catches, attributes_number['devswarm.generation.regenerations'] AS regens, round(durationNano/1e9,1) AS seconds FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} ORDER BY timestamp DESC LIMIT 20"
+            "query": "SELECT attributes_string['swarm.generation.id'] AS generation, attributes_string['swarm.generation.verdict'] AS verdict, attributes_number['swarm.generation.critic_catches'] AS catches, attributes_number['swarm.generation.regenerations'] AS regens, round(durationNano/1e9,1) AS seconds FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} ORDER BY timestamp DESC LIMIT 20"
           }
         ],
         "builder": {

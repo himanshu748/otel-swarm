@@ -38,7 +38,13 @@ await swarm.task('generation', { 'demo.prompt': 'build me a thing' }, async (roo
     swarm.reviewEvents(span, [{ target: 'backend', severity: 'high', description: 'demo catch: missing input validation' }]);
   });
 
-  root.setAttribute('demo.verdict', 'pass');
+  // The bundled dashboards read these off the root span. Set the same three on
+  // your own task span and the pack works against your swarm without edits.
+  root.setAttributes({
+    'swarm.generation.verdict': 'pass',
+    'swarm.generation.critic_catches': 1,
+    'swarm.generation.regenerations': 0
+  });
 });
 
 await swarm.shutdown();

@@ -18,7 +18,7 @@
           "spec": {
             "name": "A",
             "disabled": false,
-            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 5 MINUTE) AS ts, count() AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND arrayExists(e -> e LIKE '%fallback_promotion%', events) AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts ORDER BY ts"
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 5 MINUTE) AS ts, count() AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='otel-swarm-demo' AND arrayExists(e -> e LIKE '%fallback_promotion%', events) AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts ORDER BY ts"
           }
         }
       ]

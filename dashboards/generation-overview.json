@@ -67,7 +67,7 @@
             "name": "A",
             "legend": "pass %",
             "disabled": false,
-            "query": "SELECT round(100 * countIf(attributes_string['devswarm.generation.verdict']='pass') / greatest(count(),1), 1) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
+            "query": "SELECT round(100 * countIf(attributes_string['swarm.generation.verdict']='pass') / greatest(count(),1), 1) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}}"
           }
         ],
         "builder": {
@@ -109,7 +109,7 @@
             "name": "A",
             "legend": "",
             "disabled": false,
-            "query": "SELECT attributes_string['devswarm.role'] AS role, count() AS calls, round(avg(durationNano)/1e9,1) AS avg_s, round(quantile(0.95)(durationNano)/1e9,1) AS p95_s, countIf(statusCode=2) AS errors FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY role ORDER BY calls DESC"
+            "query": "SELECT attributes_string['swarm.role'] AS role, count() AS calls, round(avg(durationNano)/1e9,1) AS avg_s, round(quantile(0.95)(durationNano)/1e9,1) AS p95_s, countIf(statusCode=2) AS errors FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName = '{{.service}}' AND name LIKE 'llm.%' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY role ORDER BY calls DESC"
           }
         ],
         "builder": {

@@ -18,7 +18,7 @@
           "spec": {
             "name": "A",
             "disabled": false,
-            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 30 MINUTE) AS ts, sum(attributes_number['devswarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='devswarm' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts HAVING count() > 0 ORDER BY ts"
+            "query": "SELECT toStartOfInterval(timestamp, INTERVAL 30 MINUTE) AS ts, sum(attributes_number['swarm.generation.critic_catches']) AS value FROM signoz_traces.distributed_signoz_index_v3 WHERE serviceName='otel-swarm-demo' AND name='generation' AND timestamp BETWEEN {{.start_datetime}} AND {{.end_datetime}} GROUP BY ts HAVING count() > 0 ORDER BY ts"
           }
         }
       ]
