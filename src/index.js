@@ -1,7 +1,7 @@
 import { trace, SpanStatusCode } from '@opentelemetry/api';
 import { NodeTracerProvider, BatchSpanProcessor, ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import { EventEmitter } from 'node:events';
 
 /**
@@ -10,17 +10,26 @@ import { EventEmitter } from 'node:events';
  * plus a local event bus mirroring everything the spans record, so a UI can
  * stream the same data SigNoz stores (one pipeline, two consumers).
  */
-export function createSwarm({ service, version = '0.0.0', otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT } = {}) {
+export function createSwarm({
+  service,
+  version = '0.0.0',
+  otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+  // Per the OTel spec the signal-specific variable is a full URL, used as-is.
+  tracesEndpoint = process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+  // Optional custom exporter (e.g. InMemorySpanExporter in tests); overrides the endpoints.
+  exporter
+} = {}) {
   if (!service) throw new Error('createSwarm requires a service name');
+  const resolvedExporter =
+    exporter ||
+    (tracesEndpoint
+      ? new OTLPTraceExporter({ url: tracesEndpoint })
+      : otlpEndpoint
+        ? new OTLPTraceExporter({ url: `${otlpEndpoint.replace(/\/$/, '')}/v1/traces` })
+        : new ConsoleSpanExporter());
   const provider = new NodeTracerProvider({
-    resource: new Resource({ 'service.name': service, 'service.version': version }),
-    spanProcessors: [
-      new BatchSpanProcessor(
-        otlpEndpoint
-          ? new OTLPTraceExporter({ url: `${otlpEndpoint.replace(/\/$/, '')}/v1/traces` })
-          : new ConsoleSpanExporter()
-      )
-    ]
+    resource: resourceFromAttributes({ 'service.name': service, 'service.version': version }),
+    spanProcessors: [new BatchSpanProcessor(resolvedExporter)]
   });
   provider.register();
   const tracer = trace.getTracer(service);
@@ -38,6 +47,7 @@ export function createSwarm({ service, version = '0.0.0', otlpEndpoint = process
         span.end();
         return result;
       } catch (err) {
+        span.recordException(err);
         span.setStatus({ code: SpanStatusCode.ERROR, message: String(err) });
         emit('task_error', { name, reason: String(err.message || err) });
         span.end();
@@ -58,6 +68,7 @@ export function createSwarm({ service, version = '0.0.0', otlpEndpoint = process
         span.end();
         return result;
       } catch (err) {
+        span.recordException(err);
         span.setStatus({ code: SpanStatusCode.ERROR, message: String(err) });
         emit('agent_error', { role, reason: String(err.message || err) });
         span.end();
@@ -80,8 +91,10 @@ export function createSwarm({ service, version = '0.0.0', otlpEndpoint = process
       const traceId = span.spanContext().traceId;
       const started = Date.now();
       emit('llm_start', { role, model, traceId });
-      const finish = (usedModel, r) => {
+      const finish = (usedModel, r = {}) => {
         span.setAttributes({
+          // The model that actually answered: differs from gen_ai.request.model after a fallback.
+          'gen_ai.response.model': usedModel,
           'gen_ai.usage.input_tokens': r.inputTokens ?? 0,
           'gen_ai.usage.output_tokens': r.outputTokens ?? 0
         });
@@ -93,6 +106,7 @@ export function createSwarm({ service, version = '0.0.0', otlpEndpoint = process
         return finish(model, await call(model));
       } catch (err) {
         if (!fallbackModel) {
+          span.recordException(err);
           span.setStatus({ code: SpanStatusCode.ERROR, message: String(err) });
           emit('llm_error', { role, model, reason: String(err.message || err), traceId });
           span.end();
@@ -108,6 +122,7 @@ export function createSwarm({ service, version = '0.0.0', otlpEndpoint = process
         try {
           return finish(fallbackModel, await call(fallbackModel));
         } catch (err2) {
+          span.recordException(err2);
           span.setStatus({ code: SpanStatusCode.ERROR, message: String(err2) });
           emit('llm_error', { role, model: fallbackModel, reason: String(err2.message || err2), traceId });
           span.end();

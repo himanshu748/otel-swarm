@@ -1,5 +1,7 @@
 # otel-swarm
 
+[![CI](https://github.com/himanshu748/otel-swarm/actions/workflows/ci.yml/badge.svg)](https://github.com/himanshu748/otel-swarm/actions/workflows/ci.yml)
+
 OpenTelemetry instrumentation for multi-agent LLM systems. One `createSwarm()` call gives you GenAI-semconv spans for every agent and every model call, fallback promotions recorded as span events, critic catches as span events, and a mirrored local event bus so a live UI can stream exactly what your tracing backend stores (one pipeline, two consumers, and they can never disagree).
 
 Built during the Agents of SigNoz hackathon to instrument [DevSwarm](https://github.com/himanshu748/devswarm), extracted because any multi-agent system has the same observability problem: parallel agents, model fallbacks and review loops are opaque without traces, and nobody wants to hand-wire OTel for every role.
@@ -19,7 +21,21 @@ npm run example                                              # spans to console
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 npm run example   # spans to SigNoz
 ```
 
+<!-- TODO(himanshu): add a SigNoz trace screenshot here, e.g. docs/trace.png showing the fallback_promotion event -->
+
 The example runs a fake four-agent pipeline: a task root span, parallel agent spans, an LLM call whose primary fails and promotes to its fallback (visible as a `fallback_promotion` span event), and a critic catch. Open SigNoz and the whole story is one trace.
+
+## Configuration
+
+| Option / env var | Default | Meaning |
+| --- | --- | --- |
+| `service` (required) | none | `service.name` on every span |
+| `version` | `0.0.0` | `service.version` |
+| `otlpEndpoint` / `OTEL_EXPORTER_OTLP_ENDPOINT` | unset | OTLP/HTTP base URL; `/v1/traces` is appended (SigNoz: `http://localhost:4318`) |
+| `tracesEndpoint` / `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | unset | Full traces URL, used as-is; wins over the base URL |
+| `exporter` | none | Any OTel `SpanExporter` (e.g. `InMemorySpanExporter` in tests); wins over both endpoints |
+
+With no endpoint and no exporter, spans go to the console. Requires Node `^18.19 || >=20.6` (OpenTelemetry JS 2.x).
 
 ## API
 
@@ -50,7 +66,7 @@ swarm.events.on('event', (e) => { /* stream llm_start/llm_end/fallback/critic_ca
 
 - `task(name, attrs, fn)`: root span per end-to-end run.
 - `agent(role, fn)`: child span per agent unit of work.
-- `llm(role, {model, fallbackModel, call})`: GenAI semconv span per model call; `call(model)` is invoked again with `fallbackModel` if the primary throws, and the switch is a span event, so "why did the model change" is answerable from the trace.
+- `llm(role, {model, fallbackModel, call})`: GenAI semconv span per model call; `call(model)` is invoked again with `fallbackModel` if the primary throws, and the switch is a span event, so "why did the model change" is answerable from the trace. `gen_ai.request.model` stays the model you attempted; `gen_ai.response.model` is the one that answered.
 - `reviewEvents(span, issues)`: review findings as span events.
 - `events`: an EventEmitter mirroring every span lifecycle, with `traceId` on LLM events for deep-linking your UI to the exact trace.
 
@@ -73,6 +89,14 @@ root.setAttributes({
 ```
 
 `example/demo.js` sets them, so you can see the shape.
+
+## Development
+
+```sh
+npm ci
+npm test          # node:test suite with an in-memory exporter, no backend needed
+npm run example
+```
 
 ## License
 
